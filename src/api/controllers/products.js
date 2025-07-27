@@ -9,8 +9,9 @@ exports.products_get_all = (req, res, next) => {
     }
   
     if (req.query.price) {
-      filter.price = parseFloat(req.query.price);
-    }
+        filter.price = { $gt: parseFloat(req.query.price) }; 
+      }
+      
   
     Product.find(filter)
       .select("name price _id productImage")
@@ -52,7 +53,7 @@ exports.products_create_product = (req, res, next) => {
     .then(result => {
       console.log(result);
       res.status(201).json({
-        message: "Created product successfully",
+        message: "ürün oluşturuldu",
         createdProduct: {
           name: result.name,
           price: result.price,
@@ -90,7 +91,7 @@ exports.products_get_product = (req, res, next) => {
       } else {
         res
           .status(404)
-          .json({ message: "No valid entry found for provided ID" });
+          .json({ message: "verilen kimlik için geçerli ürün bulunamadı" });
       }
     })
     .catch(err => {
@@ -110,7 +111,7 @@ exports.products_update_product = (req, res, next) => {
       .exec()
       .then(result => {
         res.status(200).json({
-          message: "Product updated",
+          message: "ürün güncellendi",
           request: {
             type: "GET",
             url: "http://localhost:3000/products/" + id
@@ -133,7 +134,7 @@ exports.products_update_product = (req, res, next) => {
       .exec()
       .then(result => {
         res.status(200).json({
-          message: "Product deleted",
+          message: "ürün silindi",
           request: {
             type: "POST",
             url: "http://localhost:3000/products",
