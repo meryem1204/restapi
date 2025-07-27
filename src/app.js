@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
+const userRoutes = require('./api/routes/user');
 
 mongoose.connect('mongodb://127.0.0.1:27017/restapiDB', {
   useNewUrlParser: true,
@@ -13,15 +14,22 @@ mongoose.connect('mongodb://127.0.0.1:27017/restapiDB', {
 })
 .then(() => console.log('MongoDB bağlantısı başarılı'))
 .catch((err) => console.error('MongoDB bağlantı hatası:', err));
-
+mongoose.Promise = global.Promise;
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+
+
 app.use('/products', productRoutes); 
 app.use('/orders', orderRoutes); 
+app.use('/user', userRoutes);
 
-
+app.get('/', (req, res) => {
+    res.send('Hoş geldin! API çalışıyor.');
+  });
+  
+//CORS ayarları
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Header', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -41,7 +49,7 @@ app.use((req, res, next) => {
     next(error);
 })
 
-app.use((req, res, next) => {
+app.use((error, req, res, next) => {
     res.status(error.status || 500);
     res.json({
         error: {
@@ -49,6 +57,7 @@ app.use((req, res, next) => {
         }
     });
 });
+
 
 
 
