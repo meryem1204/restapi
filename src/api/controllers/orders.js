@@ -4,33 +4,31 @@ const Order = require("../models/order");
 const Product = require("../models/product");
 
 exports.orders_get_all = (req, res, next) => {
-  Order.find()
-    .select("product quantity _id")
-    .populate("product", "name")
-    .exec()
-    .then(docs => {
-      res.status(200).json({
-        count: docs.length,
-        orders: docs.map(doc => {
-          return {
-            _id: doc._id,
-            product: doc.product,
-            quantity: doc.quantity,
-            request: {
-              type: "GET",
-              url: "http://localhost:3000/orders/" + doc._id
-            }
-          };
-        })
+    Order.find({ user: req.userData.userId })  // sadece kendi siparişleri
+      .select("product quantity _id")
+      .populate("product", "name")
+      .exec()
+      .then(docs => {
+        res.status(200).json({
+          count: docs.length,
+          orders: docs.map(doc => {
+            return {
+              _id: doc._id,
+              product: doc.product,
+              quantity: doc.quantity,
+              request: {
+                type: "GET",
+                url: "http://localhost:3000/orders/" + doc._id
+              }
+            };
+          })
+        });
+      })
+      .catch(err => {
+        res.status(500).json({ error: err });
       });
-    })
-    .catch(err => {
-      res.status(500).json({
-        error: err
-      });
-    });
-};
-
+  };
+  
 exports.orders_create_order = (req, res, next) => {
   Product.findById(req.body.productId)
     .then(product => {
@@ -42,7 +40,9 @@ exports.orders_create_order = (req, res, next) => {
       const order = new Order({
         _id: new mongoose.Types.ObjectId(),
         quantity: req.body.quantity,
-        product: req.body.productId
+        product: req.body.productId,
+        user: req.userData.userId
+
       });
       return order.save();
     })
